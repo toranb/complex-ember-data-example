@@ -1,0 +1,3 @@
+Django
+django-templatetag-handlebars
+djangorestframework==2.1.14

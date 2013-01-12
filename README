@@ -1,0 +1,24 @@
+ember.js web app showing one to many data models in action using ember-data
+
+To run this django application
+
+1. pip install -r requirements.txt
+2. python manage.py syncdb
+3. python manage.py runserver
+4. http://localhost:8000/admin/
+5. add a few sessions and speakers
+
+**Files of interest for anyone looking at the ember side of this project
+
+https://github.com/toranb/ember-code-camp/blob/master/codecamp/static/script/app/codecamp.js
+
+- The above contains the ember views/controllers/models/router
+
+https://github.com/toranb/ember-code-camp/blob/master/codecamp/ember/templates/index.html
+
+- The above contains the handlebars template
+
+To run the jasmine unit tests
+
+1.) npm install
+2.) node node_modules/jasmine-phantom-node/bin/jasmine-phantom-node codecamp/static/script/tests

@@ -1,0 +1,8 @@
+{
+  "name": "unit_testing_javascript",
+  "description": "npm files needed to unit test javascript in isolation",
+  "version": "0.0.1",
+  "dependencies": {
+    "jasmine-phantom-node": ""
+  }
+}
