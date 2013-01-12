@@ -8,10 +8,10 @@ To run this django application
 
 **Files of interest for anyone looking at the ember side of this project
 
-https://github.com/toranb/ember-code-camp/blob/master/codecamp/static/script/app/codecamp.js
+https://github.com/toranb/complex-ember-data-example/blob/master/codecamp/static/script/app/codecamp.js
 
 - The above contains the ember views/controllers/models/router
 
-https://github.com/toranb/ember-code-camp/blob/master/codecamp/ember/templates/index.html
+https://github.com/toranb/complex-ember-data-example/blob/master/codecamp/ember/templates/index.html
 
 - The above contains the handlebars template
