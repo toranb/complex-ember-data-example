@@ -60,10 +60,12 @@
 </script>
 
 <script type="text/x-handlebars" data-template-name="speaker">
-  {{model.name}}
-  {{model.location}}
+  {{view Ember.TextField valueBinding="model.name"}}<br />
+  {{view Ember.TextField valueBinding="model.location"}}<br />
+  <input type="submit" value="update" {{action updateSpeaker model target="view"}}/><br />
+
   {{#each persona in model.personas}}
-    {{persona.nickname}}
+    {{persona.nickname}}<br />
   {{/each}}
 </script>
 

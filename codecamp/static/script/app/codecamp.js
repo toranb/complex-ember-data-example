@@ -128,3 +128,9 @@ CodeCamp.AssociationsRoute = Ember.Route.extend({
     return CodeCamp.Association.find();
   }
 });
+
+CodeCamp.SpeakerView = Ember.View.extend({
+  updateSpeaker: function(model) {
+    this.get('controller.store').commit();
+  }
+});
