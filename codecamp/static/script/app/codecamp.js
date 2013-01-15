@@ -101,10 +101,10 @@ CodeCamp.SessionController = Ember.ObjectController.extend({
 });
 
 CodeCamp.Router.map(function(match) {
-  match("/").to("sessions");
-  match("/associations").to("associations");
-  match("/session/:session_id").to("session");
-  match("/speaker/:speaker_id").to("speaker");
+  this.route("sessions", { path : "/" });
+  this.route("associations", { path : "/associations" });
+  this.route("session", { path : "/session/:session_id" });
+  this.route("speaker", { path : "/speaker/:speaker_id" });
 });
 
 CodeCamp.SessionRoute = Ember.Route.extend({
@@ -134,3 +134,8 @@ CodeCamp.SpeakerView = Ember.View.extend({
     this.get('controller.store').commit();
   }
 });
+
+CodeCamp.initialize();
+
+//the above isn't needed for production code anymore, but my test code
+////won't work w/out it ... so I put this back in until I find a work around

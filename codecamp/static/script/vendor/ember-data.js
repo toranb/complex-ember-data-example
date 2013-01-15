@@ -148,7 +148,11 @@ DS.AdapterPopulatedRecordArray = DS.RecordArray.extend({
     set(this, 'isLoaded', true);
     this.endPropertyChanges();
 
-    this.trigger('didLoad');
+    var self = this; 
+    // TODO: does triggering didLoad event should be the last action of the runLoop?
+    Ember.run.once(function() {
+      self.trigger('didLoad');
+    });
   }
 });
 
@@ -224,9 +228,9 @@ DS.ManyArray = DS.RecordArray.extend({
     var references = get(this, 'content'),
         store = get(this, 'store'),
         type = get(this, 'type'),
-        parent = get(this, 'owner');
+        owner = get(this, 'owner');
 
-    store.fetchUnloadedReferences(type, references, parent);
+    store.fetchUnloadedReferences(type, references, owner);
   },
 
   // Overrides Ember.Array's replace method to implement
@@ -1082,7 +1086,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
 
     @property {DS.Adapter|String}
   */
-  adapter: 'DS.Adapter',
+  adapter: 'DS.RESTAdapter',
 
   /**
     @private
@@ -1452,9 +1456,9 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     then converts the needed `clientId`s to IDs and invokes `findMany`
     on the adapter.
   */
-  fetchUnloadedReferences: function(type, references, parent) {
+  fetchUnloadedReferences: function(type, references, owner) {
     var neededReferences = this.neededReferences(type, references);
-    this.fetchMany(type, neededReferences, parent);
+    this.fetchMany(type, neededReferences, owner);
   },
 
   /**
@@ -1468,7 +1472,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     method) or when the data underlying an existing relationship
     changes (via the `fetchUnloadedReferences` method).
   */
-  fetchMany: function(type, references, parent) {
+  fetchMany: function(type, references, owner) {
     if (!references.length) { return; }
 
     var ids = map(references, function(reference) {
@@ -1476,7 +1480,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     });
 
     var adapter = this.adapterForType(type);
-    if (adapter && adapter.findMany) { adapter.findMany(this, type, ids, parent); }
+    if (adapter && adapter.findMany) { adapter.findMany(this, type, ids, owner); }
     else { throw "Adapter is either null or does not implement `findMany` method"; }
   },
 
@@ -6071,7 +6075,7 @@ DS.Serializer = Ember.Object.extend({
     mappings.forEach(function(key, mapping) {
       if (typeof key === 'string') {
         var type = Ember.get(Ember.lookup, key);
-        Ember.assert("Could not find model at path" + key, type);
+        Ember.assert("Could not find model at path " + key, type);
 
         reifiedMappings.set(type, mapping);
       } else {
@@ -6093,7 +6097,7 @@ DS.Serializer = Ember.Object.extend({
     configurations.forEach(function(key, mapping) {
       if (typeof key === 'string' && key !== 'plurals') {
         var type = Ember.get(Ember.lookup, key);
-        Ember.assert("Could not find model at path" + key, type);
+        Ember.assert("Could not find model at path " + key, type);
 
         reifiedConfigurations.set(type, mapping);
       } else {
@@ -6398,14 +6402,42 @@ DS.JSONSerializer = DS.Serializer.extend({
     }
   },
 
-  addHasMany: function(hash, record, key, relationship) {
-    var array = [];
+  /**
+    Adds a has-many relationship to the JSON hash being built.
 
-    this.eachEmbeddedHasManyRecord(record, function(embeddedRecord) {
-      array.push(this.serialize(embeddedRecord, { includeId: true }));
+    The default REST semantics are to only add a has-many relationship if it
+    is embedded. If the relationship was initially loaded by ID, we assume that
+    that was done as a performance optimization, and that changes to the
+    has-many should be saved as foreign key changes on the child's belongs-to
+    relationship.
+
+    @param {Object} hash the JSON being built
+    @param {DS.Model} record the record being serialized
+    @param {String} key the JSON key into which the serialized relationship
+      should be saved
+    @param {Object} relationship metadata about the relationship being serialized
+  */
+  addHasMany: function(hash, record, key, relationship) {
+    var type = record.constructor,
+        name = relationship.key,
+        serializedHasMany = [],
+        manyArray, embeddedType;
+
+    // If the has-many is not embedded, there is nothing to do.
+    embeddedType = this.embeddedType(type, name);
+    if (embeddedType !== 'always') { return; }
+
+    // Get the DS.ManyArray for the relationship off the record
+    manyArray = get(record, name);
+
+    // Build up the array of serialized records
+    manyArray.forEach(function (record) {
+      serializedHasMany.push(this.serialize(record, { includeId: true }));
     }, this);
 
-    hash[key] = array;
+    // Set the appropriate property of the serialized JSON to the
+    // array of serialized embedded records
+    hash[key] = serializedHasMany;
   },
 
   // EXTRACTION
@@ -7256,7 +7288,17 @@ DS.FixtureAdapter = DS.Adapter.extend({
     Implement this method in order to provide data associated with a type
   */
   fixturesForType: function(type) {
-    return type.FIXTURES ? Ember.A(type.FIXTURES) : null;
+    if (type.FIXTURES) {
+      var fixtures = Ember.A(type.FIXTURES);
+      return fixtures.map(function(fixture){
+        if(!fixture.id){
+          throw new Error('the id property must be defined for fixture %@'.fmt(fixture));
+        }
+        fixture.id = fixture.id + '';
+        return fixture;
+      });
+    }
+    return null;
   },
 
   /*
@@ -7665,7 +7707,7 @@ DS.RESTAdapter = DS.Adapter.extend({
     });
   },
 
-  findMany: function(store, type, ids) {
+  findMany: function(store, type, ids, owner) {
     var root = this.rootForType(type);
     ids = this.serializeIds(ids);
 

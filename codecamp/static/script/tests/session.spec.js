@@ -1,15 +1,33 @@
 require('static/script/app/codecamp.js');
+require('static/script/tests/local_adapter.js');
 
 describe ("CodeCamp.SessionView Tests", function(){
 
-  var sut, controller, session, event;
+  var get = Ember.get, set = Ember.set, sut, controller, session, store;
 
   beforeEach(function(){
+    store = DS.Store.create({
+      revision: 11,
+      adapter: DS.LSAdapter.create()
+    });
     sut = CodeCamp.SessionView.create();
-    controller = new Object({addRating:function(){}});
+    controller = CodeCamp.SessionController.create();
+    controller.set("store", store);
     sut.set("controller", controller);
-    session = CodeCamp.Session.createRecord();
-    event = {'context': session};
+    session = CodeCamp.Session.createRecord({ id: 1, name: "First", room: "A", ratings: [], speakers: [], tags: []});
+  });
+
+  afterEach(function() {
+    Ember.run(function() {
+      store.destroy();
+      controller.destroy();
+      sut.destroy();
+      session.destroy();
+    });
+    store = null;
+    controller = null;
+    sut = null;
+    session = null;
   });
 
   it ("form is not valid when score is never set but feedback is legit", function(){
@@ -61,70 +79,14 @@ describe ("CodeCamp.SessionView Tests", function(){
     expect(result).toEqual(true);
   });
 
-  it ("will not reset any form input when form is not valid", function(){
-    spyOn(sut, 'formIsValid').andReturn(false);
-    spyOn(sut, 'buildRatingFromInputs');
-    sut.set('score', ' ');
-    sut.set('feedback', 'foo');
-    sut.addRating(event);
-    expect(sut.get('score')).toEqual(' ');
-    expect(sut.get('feedback')).toEqual('foo');
-  });
-
-  it ("will reset each form input when form is valid", function(){
-    spyOn(sut, 'formIsValid').andReturn(true);
-    spyOn(sut, 'buildRatingFromInputs').andReturn(new Object());
+  it ("will create rating when form is valid", function(){
     sut.set('score', '1234');
     sut.set('feedback', 'abcd');
-    sut.addRating(event);
-    expect(sut.get('score')).toEqual('');
-    expect(sut.get('feedback')).toEqual('');
-  });
-
-  it ("will not invoke addRating on the controller when form is not valid", function(){
-    spyOn(sut, 'formIsValid').andReturn(false);
-    var addSpy = spyOn(controller, 'addRating');
-    sut.addRating(event);
-    expect(addSpy).not.toHaveBeenCalledWith(jasmine.any(Object));
-  });
-
-  it ("will invoke addRating on the controller when form is valid", function(){
-    spyOn(sut, 'formIsValid').andReturn(true);
-    var addSpy = spyOn(controller, 'addRating')
-    sut.addRating(event);
-    expect(addSpy).toHaveBeenCalledWith(jasmine.any(Object));
-  });
-
-  it ("invokes addRating on the controller with a complete rating object when form is valid", function(){
-    spyOn(sut, 'formIsValid').andReturn(true);
-    sut.set('score', '1234');
-    sut.set('feedback', 'abcd');
-    var addSpy = spyOn(controller, 'addRating')
-    sut.addRating(event);
-    expect(addSpy.argsForCall[0][0].get('session')).toBe(session);
-    expect(addSpy.argsForCall[0][0].get('score')).toEqual('1234');
-    expect(addSpy.argsForCall[0][0].get('feedback')).toEqual('abcd');
-  });
-
-});
-
-describe ("CodeCamp.SessionController Tests", function(){
-
-  var sut, store, rating, session;
-
-  beforeEach(function(){
-    sut = CodeCamp.SessionController.create();
-    store = new Object({commit:function(){}});
-    session = CodeCamp.Session.createRecord({name:'foo', 'ratings':[]});
-    sut.set('content', session);
-    sut.set("store", store);
-    rating = CodeCamp.Rating.createRecord();
-  });
-
-  it ("will invoke commit on the store", function(){
-    var commitSpy = spyOn(store, 'commit')
-    sut.addRating(rating);
-    expect(commitSpy).toHaveBeenCalledWith();
+    sut.addRating(session);
+    var rating = store.find(CodeCamp.Rating, 1);
+    expect(get(rating, 'score'), '1234');
+    expect(get(rating, 'feedback'), 'abcd');
+    expect(get(get(rating, 'session'), 'id'), 1);
   });
 
 });
