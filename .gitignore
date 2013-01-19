@@ -5,3 +5,4 @@
 .ropeproject/*
 
 node_modules/*
+static/*

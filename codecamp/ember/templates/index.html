@@ -1,80 +1,23 @@
+{% load staticfiles %}
+{% load compress %}
 <!DOCTYPE html>
 <html>
 <title>Code Camp</title>
-<link href="{{ STATIC_URL }}css/default.css" rel="stylesheet" type="text/css">
+<link href="{% static 'css/default.css' %}" rel="stylesheet" type="text/css">
 <body>
-{% load templatetag_handlebars %}
-{% verbatim %}
 
-<script type="text/x-handlebars" data-template-name="application">
-{{outlet}}
-</script>
-
-<script type="text/x-handlebars" data-template-name="associations">
-{{#each association in controller}}
-  Association: {{association.name}}<br />
-  {{#each speaker in association.speakers}}
-    Speaker: {{speaker.name}}<br />
-    {{#each persona in speaker.personas}}
-      Persona: {{persona.nickname}}<br />
-      Company: {{persona.company.name}}<br />
-      {{#each sponsor in persona.company.sponsors}}
-        Sponsor: {{sponsor.name}}<br />
-      {{/each}}
-    {{/each}}
-  {{/each}}
-{{/each}}
-</script>
-
-<script type="text/x-handlebars" data-template-name="sessions">
-{{#each session in controller}}
-  {{session.name}}<br />
-  {{session.room}}<br />
-  {{#each speaker in session.speakers}}
-    {{speaker.name}}<br />
-  {{/each}}
-  {{#each tag in session.tags}}
-    {{tag.description}}<br />
-  {{/each}}
-
-  {{#linkTo 'session' session}}View Session Details{{/linkTo}}<br /><br />
-{{/each}}
-{{#linkTo 'associations'}}View All Associations{{/linkTo}}
-</script>
-
-<script type="text/x-handlebars" data-template-name="session">
-{{model.name}}<br />
-{{model.room}}<br />
-  {{#each speaker in model.speakers}}
-    {{speaker.name}}<br />
-    {{#linkTo 'speaker' speaker}}View Speaker Details{{/linkTo}}<br /><br />
-  {{/each}}
-  {{#each rating in model.ratings}}
-    {{rating.score}}<br />
-    {{rating.feedback}}<br/>
-  {{/each}}
-  <br />
-  {{view Ember.TextField placeholder="score" valueBinding="view.score"}}
-  {{view Ember.TextField placeholder="feedback" valueBinding="view.feedback"}}
-  <a {{action addRating model target="view" href=true}}>add rating</a>
-</script>
-
-<script type="text/x-handlebars" data-template-name="speaker">
-  {{view Ember.TextField valueBinding="model.name"}}<br />
-  {{view Ember.TextField valueBinding="model.location"}}<br />
-  <input type="submit" value="update" {{action updateSpeaker model target="view"}}/><br />
-
-  {{#each persona in model.personas}}
-    {{persona.nickname}}<br />
-  {{/each}}
-</script>
-
-{% endverbatim %}
-<script src="{{ STATIC_URL }}script/vendor/jquery-1.7.2.js" type="text/javascript"></script>
-<script src="{{ STATIC_URL }}script/vendor/handlebars-1.0.rc.1.js" type="text/javascript"></script>
-<script src="{{ STATIC_URL }}script/vendor/ember.js" type="text/javascript"></script>
-<script src="{{ STATIC_URL }}script/vendor/ember-data.js" type="text/javascript"></script>
-<script src="{{ STATIC_URL }}script/vendor/adapter.js" type="text/javascript"></script>
-<script src="{{ STATIC_URL }}script/app/codecamp.js" type="text/javascript"></script>
+{% compress js %}
+<script src="{% static 'script/vendor/jquery-1.7.2.js' %}" type="text/javascript"></script>
+<script src="{% static 'script/vendor/handlebars-1.0.rc.1.js' %}" type="text/javascript"></script>
+<script src="{% static 'script/vendor/ember.js' %}" type="text/javascript"></script>
+<script src="{% static 'script/vendor/ember-data.js' %}" type="text/javascript"></script>
+<script src="{% static 'script/vendor/adapter.js' %}" type="text/javascript"></script>
+<script src="{% static 'script/app/codecamp.js' %}" type="text/javascript"></script>
+<script src="{% static 'script/app/templates/application.handlebars' %}" type="text/x-handlebars"></script>
+<script src="{% static 'script/app/templates/associations.handlebars' %}" type="text/x-handlebars"></script>
+<script src="{% static 'script/app/templates/sessions.handlebars' %}" type="text/x-handlebars"></script>
+<script src="{% static 'script/app/templates/session.handlebars' %}" type="text/x-handlebars"></script>
+<script src="{% static 'script/app/templates/speaker.handlebars' %}" type="text/x-handlebars"></script>
+{% endcompress %}
 </body>
 </html>

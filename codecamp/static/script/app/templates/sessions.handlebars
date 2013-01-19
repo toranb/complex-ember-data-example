@@ -1,0 +1,14 @@
+{{#each session in controller}}
+  {{session.name}}<br />
+  {{session.room}}<br />
+  {{#each speaker in session.speakers}}
+    {{speaker.name}}<br />
+  {{/each}}
+  {{#each tag in session.tags}}
+    {{tag.description}}<br />
+  {{/each}}
+
+  {{#linkTo 'session' session}}View Session Details{{/linkTo}}<br /><br />
+{{/each}}
+{{#linkTo 'associations'}}View All Associations{{/linkTo}}
+

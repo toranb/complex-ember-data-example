@@ -2,6 +2,7 @@ from os.path import dirname, join, abspath
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+COMPRESS_ENABLED = False
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -33,6 +34,11 @@ ADMIN_MEDIA_PREFIX = '/static/admin/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
+)
+
+COMPRESS_JS_FILTERS = (
+    'compressor.filters.jsmin.JSMinFilter',
 )
 
 STATICFILES_DIRS = (
@@ -74,7 +80,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'rest_framework',
     'codecamp.ember',
-    'templatetag_handlebars',
+    'compressor',
 )
 
 LOGGING = {
@@ -100,3 +106,7 @@ LOGGING = {
         },
     }
 }
+
+COMPRESS_PRECOMPILERS = (
+    ('text/x-handlebars', 'node node_modules/django-ember-precompile/bin/django-ember-precompile {infile}'),
+)

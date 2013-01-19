@@ -1,0 +1,15 @@
+{{model.name}}<br />
+{{model.room}}<br />
+  {{#each speaker in model.speakers}}
+    {{speaker.name}}<br />
+    {{#linkTo 'speaker' speaker}}View Speaker Details{{/linkTo}}<br /><br />
+  {{/each}}
+  {{#each rating in model.ratings}}
+    {{rating.score}}<br />
+    {{rating.feedback}}<br/>
+  {{/each}}
+  <br />
+  {{view Ember.TextField placeholder='score' valueBinding='view.score'}}
+  {{view Ember.TextField placeholder='feedback' valueBinding='view.feedback'}}
+  <a {{action addRating model target='view' href=true}}>add rating</a>
+
