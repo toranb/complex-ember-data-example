@@ -41,9 +41,18 @@ describe ("CodeCamp.SessionView Tests", function(){
     sut.addRating(session);
     var ratings = CodeCamp.Session.find(1).get('ratings');
     var rating = ratings.objectAt(0);
+    expect(ratings.get('length')).toEqual(1);
     expect(rating.get('score')).toEqual('1234');
     expect(rating.get('feedback')).toEqual('abcd');
     expect(rating.get('session').get('id')).toEqual(1);
+  });
+
+  it ("will not create rating when form is invalid", function(){
+    sut.set('score', '');
+    sut.set('feedback', 'abcd');
+    sut.addRating(session);
+    var ratings = CodeCamp.Session.find(1).get('ratings');
+    expect(ratings.get('length')).toEqual(0);
   });
 
 });
