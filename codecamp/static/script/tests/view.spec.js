@@ -3,9 +3,12 @@ require('static/script/tests/local_adapter.js');
 
 describe ("CodeCamp.SessionView Tests", function(){
 
-  var get = Ember.get, set = Ember.set, sut, controller, session, store;
+  var sut, controller, session, store, root, rootElement;
 
   beforeEach(function(){
+    root = $('body').append('<div id="view-tests" />');
+    rootElement = window.CodeCamp.rootElement;
+    window.CodeCamp.rootElement = $("#view-tests");
     store = DS.Store.create({
       revision: 11,
       adapter: DS.LSAdapter.create()
@@ -28,6 +31,8 @@ describe ("CodeCamp.SessionView Tests", function(){
     controller = null;
     sut = null;
     session = null;
+    window.CodeCamp.rootElement = rootElement;
+    $("#view-tests").html('');
   });
 
   it ("form is not valid when score is never set but feedback is legit", function(){
@@ -79,6 +84,7 @@ describe ("CodeCamp.SessionView Tests", function(){
     expect(result).toEqual(true);
   });
 
+  //this test exists in both specs to verify local storage works as expected under test
   it ("will create rating when form is valid", function(){
     sut.set('score', '1234');
     sut.set('feedback', 'abcd');
