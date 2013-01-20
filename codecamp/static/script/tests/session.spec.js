@@ -83,10 +83,11 @@ describe ("CodeCamp.SessionView Tests", function(){
     sut.set('score', '1234');
     sut.set('feedback', 'abcd');
     sut.addRating(session);
-    var rating = store.find(CodeCamp.Rating, 1);
-    expect(get(rating, 'score'), '1234');
-    expect(get(rating, 'feedback'), 'abcd');
-    expect(get(get(rating, 'session'), 'id'), 1);
+    var ratings = CodeCamp.Session.find(1).get('ratings');
+    var rating = ratings.objectAt(0);
+    expect(rating.get('score')).toEqual('1234');
+    expect(rating.get('feedback')).toEqual('abcd');
+    expect(rating.get('session').get('id')).toEqual(1);
   });
 
 });
