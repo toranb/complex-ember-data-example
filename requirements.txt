@@ -1,3 +1,4 @@
 Django
 djangorestframework==2.1.14
 django_compressor
+django-filter

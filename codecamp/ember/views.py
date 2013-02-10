@@ -117,6 +117,7 @@ class RatingList(generics.ListCreateAPIView):
 class SpeakerList(generics.ListCreateAPIView):
     model = Speaker
     serializer_class = serializers.SpeakerSerializer
+    filter_fields = ['name']
 
 class PersonaList(generics.ListCreateAPIView):
     model = Persona

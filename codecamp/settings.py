@@ -110,3 +110,7 @@ LOGGING = {
 COMPRESS_PRECOMPILERS = (
     ('text/x-handlebars', 'node node_modules/django-ember-precompile/bin/django-ember-precompile {infile}'),
 )
+
+REST_FRAMEWORK = {
+    'FILTER_BACKEND': 'rest_framework.filters.DjangoFilterBackend'
+}
