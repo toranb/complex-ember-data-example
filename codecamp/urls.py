@@ -1,5 +1,4 @@
 from django.conf.urls import patterns, include, url
-from django.views.generic.simple import redirect_to
 from codecamp.ember.views import HomeView
 from django.contrib import admin
 from django.conf import settings
