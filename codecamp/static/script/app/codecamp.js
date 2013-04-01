@@ -143,5 +143,3 @@ CodeCamp.SpeakerView = Ember.View.extend({
     this.get('controller.store').commit();
   }
 });
-
-CodeCamp.initialize();
