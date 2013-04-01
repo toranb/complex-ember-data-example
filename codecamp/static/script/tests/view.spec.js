@@ -10,7 +10,7 @@ describe ("CodeCamp.SessionView Tests", function(){
     rootElement = window.CodeCamp.rootElement;
     window.CodeCamp.rootElement = $("#view-tests");
     store = DS.Store.create({
-      revision: 11,
+      revision: 12,
       adapter: DS.LSAdapter.create()
     });
     sut = CodeCamp.SessionView.create();
