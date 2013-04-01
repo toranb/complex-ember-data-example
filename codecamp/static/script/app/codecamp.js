@@ -29,6 +29,12 @@ CodeCamp.Speaker = DS.Model.extend({
   personas: DS.hasMany('CodeCamp.Persona')
 });
 
+CodeCamp.Speaker.reopen({
+    becameInvalid: function(errors) {
+      alert(errors.get('errors').name);
+    }
+});
+
 CodeCamp.Rating = DS.Model.extend({
   score: DS.attr('number'),
   feedback: DS.attr('string'),
