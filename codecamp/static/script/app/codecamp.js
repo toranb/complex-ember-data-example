@@ -123,7 +123,7 @@ CodeCamp.Router.map(function() {
 
 CodeCamp.SpeakersRoute = Ember.Route.extend({
   model: function() {
-    return CodeCamp.Speaker.find({name: 'Toran'});
+    return CodeCamp.Speaker.find({name: 'Joel Taddei'});
   }
 });
 
