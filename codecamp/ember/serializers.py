@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from codecamp.ember.models import Session, Speaker, Rating, Tag, Association, Sponsor, Persona, Company
+from codecamp.ember.models import Session, Speaker, Rating, Tag, Association, Sponsor, Persona, Company, User
 
 class AssociationSerializer(serializers.ModelSerializer):
     speakers = serializers.ManyPrimaryKeyRelatedField()
@@ -27,7 +27,14 @@ class SpeakerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Speaker
-        fields = ('id', 'name', 'location', 'session', 'association', 'personas')
+        fields = ('id', 'name', 'location', 'session', 'association', 'personas', 'zidentity')
+
+class UserSerializer(serializers.ModelSerializer):
+    aliases = serializers.ManyPrimaryKeyRelatedField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'aliases')
 
 class RatingSerializer(serializers.ModelSerializer):
     class Meta:

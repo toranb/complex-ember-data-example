@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Tag(models.Model):
     description = models.CharField(max_length=200)
@@ -21,6 +22,7 @@ class Speaker(models.Model):
     bio = models.TextField()
     session = models.ForeignKey(Session, related_name='speakers')
     association = models.ForeignKey(Association, related_name='speakers')
+    zidentity = models.ForeignKey(User, related_name='aliases')
 
 class Rating(models.Model):
     score = models.IntegerField()

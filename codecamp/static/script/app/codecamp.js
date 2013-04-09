@@ -26,7 +26,12 @@ CodeCamp.Speaker = DS.Model.extend({
   location: DS.attr('string'),
   session: DS.belongsTo('CodeCamp.Session'),
   association: DS.belongsTo('CodeCamp.Association'),
-  personas: DS.hasMany('CodeCamp.Persona')
+  personas: DS.hasMany('CodeCamp.Persona'),
+  zidentity: DS.belongsTo('CodeCamp.User')
+});
+
+CodeCamp.User = DS.Model.extend({
+    aliases: DS.hasMany('CodeCamp.Speaker')
 });
 
 CodeCamp.Speaker.reopen({

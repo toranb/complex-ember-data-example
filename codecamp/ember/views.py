@@ -1,7 +1,7 @@
 from django.views.generic import TemplateView
 from codecamp.ember import serializers
 from rest_framework import generics
-from codecamp.ember.models import Session, Speaker, Rating, Tag, Association, Sponsor, Persona, Company
+from codecamp.ember.models import Session, Speaker, Rating, Tag, Association, Sponsor, Persona, Company, User
 
 class HomeView(TemplateView):
     template_name = 'index.html'
@@ -35,6 +35,10 @@ class TagBySessionList(generics.ListCreateAPIView):
 class TagDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Tag
     serializer_class = serializers.TagSerializer
+
+class UserDetail(generics.RetrieveUpdateDestroyAPIView):
+    model = User
+    serializer_class = serializers.UserSerializer
 
 class SpeakerBySessionList(generics.ListCreateAPIView):
     model = Speaker
