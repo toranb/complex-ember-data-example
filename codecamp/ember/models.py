@@ -20,9 +20,9 @@ class Speaker(models.Model):
     web = models.CharField(max_length=250)
     location = models.CharField(max_length=100)
     bio = models.TextField()
-    session = models.ForeignKey(Session, related_name='speakers')
-    association = models.ForeignKey(Association, related_name='speakers')
-    zidentity = models.ForeignKey(User, related_name='aliases')
+    session = models.ForeignKey(Session, blank=True, null=True, related_name='speakers')
+    association = models.ForeignKey(Association, blank=True, null=True, related_name='speakers')
+    zidentity = models.ForeignKey(User, blank=True, null=True, related_name='aliases')
 
 class Rating(models.Model):
     score = models.IntegerField()
