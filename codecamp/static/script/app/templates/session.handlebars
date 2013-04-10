@@ -13,3 +13,9 @@
   {{view Ember.TextField placeholder='feedback' valueBinding='view.feedback'}}
   <a {{action addRating model target='view' href=true}}>add rating</a>
 
+  <br />
+  <hr>
+  <br />
+
+  {{view Ember.TextField placeholder='speaker name' valueBinding='view.speaker'}}
+  <input type="submit" value="add speaker" {{action addSpeaker model target="view"}} />

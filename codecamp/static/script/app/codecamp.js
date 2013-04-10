@@ -31,6 +31,7 @@ CodeCamp.Speaker = DS.Model.extend({
 });
 
 CodeCamp.User = DS.Model.extend({
+    username: DS.attr('string'),
     aliases: DS.hasMany('CodeCamp.Speaker')
 });
 
@@ -76,6 +77,12 @@ CodeCamp.SessionsController = Ember.ArrayController.extend({
 
 CodeCamp.SessionView = Ember.View.extend({
   templateName: 'session',
+  addSpeaker: function(session) {
+      var name = this.get('speaker');
+      var user = CodeCamp.User.find(1);
+      var speaker = session.get('speakers').createRecord({name: name, zidentity: user});
+      this.get('controller.store').commit();
+  },
   addRating: function(event) {
     if (this.formIsValid()) {
       var rating = this.buildRatingFromInputs(event);
