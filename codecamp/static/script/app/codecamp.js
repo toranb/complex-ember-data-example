@@ -24,10 +24,10 @@ CodeCamp.Session = DS.Model.extend({
 CodeCamp.Speaker = DS.Model.extend({
   name: DS.attr('string'),
   location: DS.attr('string'),
-  session: DS.belongsTo('CodeCamp.Session'),
   association: DS.belongsTo('CodeCamp.Association'),
   personas: DS.hasMany('CodeCamp.Persona'),
-  zidentity: DS.belongsTo('CodeCamp.User')
+  zidentity: DS.belongsTo('CodeCamp.User'),
+  session: DS.belongsTo('CodeCamp.Session')
 });
 
 CodeCamp.User = DS.Model.extend({
@@ -79,8 +79,10 @@ CodeCamp.SessionView = Ember.View.extend({
   templateName: 'session',
   addSpeaker: function(session) {
       var name = this.get('speaker');
+      var location = this.get('location');
       var user = CodeCamp.User.find(1);
-      var speaker = session.get('speakers').createRecord({name: name, zidentity: user});
+      var association = CodeCamp.Association.find(1);
+      var speaker = session.get('speakers').createRecord({name: name, location: location, association: association, zidentity: user});
       this.get('controller.store').commit();
   },
   addRating: function(event) {
