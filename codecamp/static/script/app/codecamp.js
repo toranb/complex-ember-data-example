@@ -78,11 +78,11 @@ CodeCamp.SessionsController = Ember.ArrayController.extend({
 CodeCamp.SessionView = Ember.View.extend({
   templateName: 'session',
   addSpeaker: function(session) {
+      //var user = CodeCamp.User.find(1);
+      //var association = CodeCamp.Association.find(1);
       var name = this.get('speaker');
       var location = this.get('location');
-      var user = CodeCamp.User.find(1);
-      var association = CodeCamp.Association.find(1);
-      var speaker = session.get('speakers').createRecord({name: name, location: location, association: association, zidentity: user});
+      var speaker = session.get('speakers').createRecord({name: name, location: location});
       this.get('controller.store').commit();
   },
   addRating: function(event) {
