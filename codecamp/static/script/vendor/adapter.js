@@ -191,12 +191,8 @@
         getCorrectPostUrl: function(record, url) {
             var totalParents = this.getBelongsTo(record);
             var totalHydrated = this.getNonEmptyRelationships(record, totalParents);
-            if (totalParents.length > 1) {
-                if (totalHydrated.length <= 1) {
-                    url = this.buildUrlWithParentWhenAvailable(record, url);
-                }
-            } else {
-                url = this.buildUrlWithParentWhenAvailable(record, url);
+            if (totalParents.length > 1 && totalHydrated.length <= 1) {
+                return this.buildUrlWithParentWhenAvailable(record, url);
             }
             return url;
         },
