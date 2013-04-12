@@ -172,9 +172,8 @@
         getBelongsTo: function(record) {
             var totalParents = [];
             record.eachRelationship(function(name, relationship) {
-                var attr = null;
                 if (relationship.kind == 'belongsTo') {
-                  totalParents.push(name);
+                    totalParents.push(name);
                 }
             }, this);
             return totalParents;
