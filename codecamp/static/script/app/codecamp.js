@@ -65,7 +65,6 @@ CodeCamp.Sponsor = DS.Model.extend({
 });
 
 CodeCamp.Store = DS.Store.extend({
-  revision: 12,
   adapter: DS.DjangoRESTAdapter.create({
       namespace: 'codecamp'
   })
