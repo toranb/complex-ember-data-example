@@ -118,6 +118,10 @@ CodeCamp.SessionController = Ember.ObjectController.extend({
   content: null,
   addRating: function(rating) {
     this.get('store').commit();
+  },
+  deleteRating: function(rating) {
+    rating.deleteRecord();
+    this.get('store').commit();
   }
 });
 

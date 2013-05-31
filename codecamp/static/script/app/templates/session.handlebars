@@ -7,6 +7,7 @@
   {{#each rating in model.ratings}}
     {{rating.score}}<br />
     {{rating.feedback}}<br/>
+    <input type="submit" value="delete" {{action deleteRating rating target="controller"}}/>
   {{/each}}
   <br />
   {{view Ember.TextField placeholder='score' valueBinding='view.score'}}
