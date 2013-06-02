@@ -4,6 +4,6 @@
   "version": "0.0.1",
   "dependencies": {
     "jasmine-phantom-node": "",
-    "django-ember-precompile": ""
+    "django-ember-precompile": "1.0.5"
   }
 }

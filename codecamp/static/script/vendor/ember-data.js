@@ -1,5 +1,5 @@
-// Version: v0.13-1-g9d6173c
-// Last commit: 9d6173c (2013-05-28 11:36:58 -0400)
+// Version: v0.13-9-g07fbd58
+// Last commit: 07fbd58 (2013-06-01 14:33:06 -0400)
 
 
 (function() {
@@ -8792,10 +8792,10 @@ DS.RESTAdapter = DS.Adapter.extend({
       };
 
       hash.error = function(jqXHR, textStatus, errorThrown) {
-        Ember.run(null, reject, errorThrown);
+        Ember.run(null, reject, jqXHR);
       };
 
-      jQuery.ajax(hash);
+      Ember.$.ajax(hash);
     });
   },
 
