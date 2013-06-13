@@ -1,43 +1,4 @@
 (function() {
-var define, requireModule;
-
-(function() {
-  var registry = {}, seen = {};
-
-  define = function(name, deps, callback) {
-    registry[name] = { deps: deps, callback: callback };
-  };
-
-  requireModule = function(name) {
-    if (seen[name]) { return seen[name]; }
-    seen[name] = {};
-
-    var mod, deps, callback, reified , exports;
-
-    mod = registry[name];
-
-    if (!mod) {
-      throw new Error("Module '" + name + "' not found.");
-    }
-
-    deps = mod.deps;
-    callback = mod.callback;
-    reified = [];
-    exports;
-
-    for (var i=0, l=deps.length; i<l; i++) {
-      if (deps[i] === 'exports') {
-        reified.push(exports = {});
-      } else {
-        reified.push(requireModule(deps[i]));
-      }
-    }
-
-    var value = callback.apply(this, reified);
-    return seen[name] = exports || value;
-  };
-})();
-(function() {
 var get = Ember.get;
 
 DS.DjangoRESTSerializer = DS.RESTSerializer.extend({
@@ -156,14 +117,20 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
     buildFindManyUrlWithParent: function(type, parent) {
         var root, url, endpoint, parentType, parentValue;
 
-        parent.eachRelationship(function(name, relationship) {
-            if (relationship.kind === 'hasMany' && relationship.type === type) {
-                endpoint = relationship.key;
-                parentType = relationship.parentType;
-            }
-        });
-
+        endpoint = parent.get('findManyKey');
+        parentType = parent.get('findManyType');
+        if (typeof endpoint !== 'string') {
+            parent.eachRelationship(function(name, relationship) {
+                if (relationship.kind === 'hasMany' && relationship.type === type) {
+                    endpoint = relationship.key;
+                    parentType = relationship.parentType;
+                }
+            });
+        }
         
+        Ember.assert("could not find a relationship for the specified child type", typeof endpoint !== "undefined");
+
+        endpoint = this.serializer.keyForAttributeName(parentType, endpoint);
         parentValue = parent.get('id');
         root = this.rootForType(parentType);
         url = this.buildURL(root, parentValue);
@@ -212,14 +179,30 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
 
 
 (function() {
-
+DS.DjangoRESTStore = DS.Store.extend({
+    findMany: function(type, idsOrReferencesOrOpaque, record, relationship) {
+        var ret;
+        
+        // check for hasMany relationship
+        if (typeof relationship === 'object' && relationship.kind === 'hasMany') {
+            record.set('findManyKey', relationship.key);
+            record.set('findManyType', relationship.parentType);
+        }
+        
+        ret = this._super(type, idsOrReferencesOrOpaque, record, relationship);
+        
+        // clear the variables we set to be clean
+        record.set('findManyKey', null);
+        record.set('findManyType', null);
+        
+        return ret;
+    }
+});
 })();
 
 
+
+(function() {
+
 })();
 
-
-if (typeof location !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
-  Ember.Logger.warn("You are running a production build of Ember on localhost and won't receive detailed error messages. "+
-               "If you want full error messages please use the non-minified build provided on the Ember website.");
-}
