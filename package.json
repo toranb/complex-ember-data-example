@@ -3,7 +3,6 @@
   "description": "npm files needed to unit test javascript in isolation",
   "version": "0.0.1",
   "dependencies": {
-    "jasmine-phantom-node": "",
-    "django-ember-precompile": "1.0.7"
+    "django-ember-precompile": "1.0.8"
   }
 }

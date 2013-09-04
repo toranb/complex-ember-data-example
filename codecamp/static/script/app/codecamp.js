@@ -2,127 +2,65 @@ CodeCamp = Ember.Application.create({
   rootElement: '#ember'
 });
 
-DS.DjangoRESTAdapter.configure("plurals", {"company" : "companies"});
+CodeCamp.Session = DS.Model.extend({
+  name: DS.attr('string'),
+  room: DS.attr('string'),
+  tags: DS.hasMany('tag', {async: true }),
+  speakers: DS.hasMany('speaker', { async: true }),
+  ratings: DS.hasMany('rating', { async: true })
+});
+
+CodeCamp.Speaker = DS.Model.extend({
+    name: DS.attr('string'),
+    location: DS.attr('string'),
+    association: DS.belongsTo('association'),
+    personas: DS.hasMany('persona', { async: true }),
+    session: DS.belongsTo('session'),
+    zidentity: DS.belongsTo('user')
+});
+
+CodeCamp.Speaker.reopen({
+    becameError: function(errors) {
+        var model = this.constructor.typeKey;
+        alert("operation failed for model: " + model);
+    }
+});
 
 CodeCamp.Tag = DS.Model.extend({
   description: DS.attr('string')
 });
 
+CodeCamp.Rating = DS.Model.extend({
+  score: DS.attr('number'),
+  feedback: DS.attr('string'),
+  session: DS.belongsTo('session')
+});
+
 CodeCamp.Association = DS.Model.extend({
   name: DS.attr('string'),
-  speakers: DS.hasMany('CodeCamp.Speaker')
-});
-
-CodeCamp.Session = DS.Model.extend({
-  name: DS.attr('string'),
-  room: DS.attr('string'),
-  speakers: DS.hasMany('CodeCamp.Speaker'),
-  ratings: DS.hasMany('CodeCamp.Rating'),
-  tags: DS.hasMany('CodeCamp.Tag')
-});
-
-CodeCamp.Speaker = DS.Model.extend({
-  name: DS.attr('string'),
-  location: DS.attr('string'),
-  association: DS.belongsTo('CodeCamp.Association'),
-  personas: DS.hasMany('CodeCamp.Persona'),
-  session: DS.belongsTo('CodeCamp.Session'),
-  zidentity: DS.belongsTo('CodeCamp.User')
+  speakers: DS.hasMany('speaker', { async: true})
 });
 
 CodeCamp.User = DS.Model.extend({
     username: DS.attr('string'),
-    aliases: DS.hasMany('CodeCamp.Speaker')
-});
-
-CodeCamp.Speaker.reopen({
-    becameInvalid: function(errors) {
-      alert(errors.get('errors').name);
-    }
-});
-
-CodeCamp.Rating = DS.Model.extend({
-  score: DS.attr('number'),
-  feedback: DS.attr('string'),
-  session: DS.belongsTo('CodeCamp.Session')
+    aliases: DS.hasMany('speaker', { async: true})
 });
 
 CodeCamp.Company = DS.Model.extend({
     name: DS.attr('string'),
-    sponsors: DS.hasMany('CodeCamp.Sponsor'),
-    persona: DS.belongsTo('CodeCamp.Persona')
+    sponsors: DS.hasMany('sponsor', { async: true}),
+    persona: DS.belongsTo('persona')
 });
 
 CodeCamp.Persona = DS.Model.extend({
     nickname: DS.attr('string'),
-    speaker: DS.belongsTo('CodeCamp.Speaker'),
-    company: DS.belongsTo('CodeCamp.Company')
+    speaker: DS.belongsTo('speaker'),
+    company: DS.belongsTo('company')
 });
 
 CodeCamp.Sponsor = DS.Model.extend({
     name: DS.attr('string'),
-    company: DS.belongsTo('CodeCamp.Company')
-});
-
-CodeCamp.Store = DS.Store.extend({
-  adapter: DS.DjangoRESTAdapter.create({
-      namespace: 'codecamp'
-  })
-});
-
-CodeCamp.SessionsController = Ember.ArrayController.extend({
-  content: []
-});
-
-CodeCamp.SessionView = Ember.View.extend({
-  templateName: 'session',
-  addSpeaker: function(session) {
-      //var user = CodeCamp.User.find(1);
-      //var association = CodeCamp.Association.find(1);
-      var name = this.get('speaker');
-      var location = this.get('location');
-      var speaker = session.get('speakers').createRecord({name: name, location: location});
-      this.get('controller.store').commit();
-  },
-  addRating: function(event) {
-    if (this.formIsValid()) {
-      var rating = this.buildRatingFromInputs(event);
-      this.get('controller').addRating(rating);
-      this.resetForm();
-    }
-  },
-  buildRatingFromInputs: function(session) {
-    var score = this.get('score');
-    var feedback = this.get('feedback');
-    return CodeCamp.Rating.createRecord(
-    { score: score,
-      feedback: feedback,
-      session: session
-    });
-  },
-  formIsValid: function() {
-    var score = this.get('score');
-    var feedback = this.get('feedback');
-    if (score === undefined || feedback === undefined || score.trim() === "" || feedback.trim() === "") {
-      return false;
-    }
-    return true;
-  },
-  resetForm: function() {
-    this.set('score', '');
-    this.set('feedback', '');
-  }
-});
-
-CodeCamp.SessionController = Ember.ObjectController.extend({
-  content: null,
-  addRating: function(rating) {
-    this.get('store').commit();
-  },
-  deleteRating: function(rating) {
-    rating.deleteRecord();
-    this.get('store').commit();
-  }
+    company: DS.belongsTo('company')
 });
 
 CodeCamp.Router.map(function() {
@@ -133,36 +71,62 @@ CodeCamp.Router.map(function() {
   this.route("speaker", { path : "/speaker/:speaker_id" });
 });
 
-CodeCamp.SpeakersRoute = Ember.Route.extend({
-  model: function() {
-    return CodeCamp.Speaker.find({name: 'Joel Taddei'});
-  }
-});
-
-CodeCamp.SessionRoute = Ember.Route.extend({
-  model: function(params) {
-      return CodeCamp.Session.find(params.session_id);
-  }
-});
-
 CodeCamp.SessionsRoute = Ember.Route.extend({
   model: function() {
-    return CodeCamp.Session.find();
+    return this.store.find('session');
   }
 });
 
-CodeCamp.AssociationsController = Ember.ArrayController.extend({
-    content: []
+CodeCamp.SpeakersRoute = Ember.Route.extend({
+  model: function() {
+      return this.store.find('speaker', {name: 'Joel Taddei'});
+    }
 });
 
 CodeCamp.AssociationsRoute = Ember.Route.extend({
   model: function() {
-    return CodeCamp.Association.find();
+      return this.store.find('association');
+    }
+});
+
+CodeCamp.SpeakerController = Ember.ObjectController.extend({
+  actions: {
+      updateSpeaker: function(model) {
+          model.save();
+      }
   }
 });
 
-CodeCamp.SpeakerView = Ember.View.extend({
-  updateSpeaker: function(model) {
-    this.get('controller.store').commit();
+CodeCamp.SessionController = Ember.ObjectController.extend({
+  actions: {
+      addSpeaker: function(session) {
+          //var user = CodeCamp.User.find(1);
+          //var association = CodeCamp.Association.find(1);
+          var name = this.get('speaker');
+          var location = this.get('location');
+          var speaker = {name: name, location: location, session: session};
+          this.store.createRecord('speaker', speaker).save();
+      },
+      addRating: function(event) {
+        var score = this.get('score');
+        var feedback = this.get('feedback');
+        if (score === undefined || feedback === undefined || score.trim() === "" || feedback.trim() === "") {
+          return;
+        }
+        var rating = { score: score, feedback: feedback, session: event};
+        this.store.createRecord('rating', rating).save();
+        //event.get('ratings').createRecord('rating', rating).save();
+        //won't update the template currently :(
+        this.set('score', '');
+        this.set('feedback', '');
+      },
+      deleteRating: function(rating) {
+          rating.deleteRecord();
+          rating.save();
+      }
   }
+});
+
+CodeCamp.ApplicationAdapter = DS.DjangoRESTAdapter.extend({
+    namespace: 'codecamp'
 });
