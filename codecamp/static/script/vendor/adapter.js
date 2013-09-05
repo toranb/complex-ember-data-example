@@ -12,8 +12,9 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
     defaultSerializer: "DS/djangoREST",
 
     createRecord: function(store, type, record) {
+      var url = this.getCorrectPostUrl(record, this.buildURL(type.typeKey));
       var data = store.serializerFor(type.typeKey).serialize(record);
-      return this.ajax(this.buildURL(type.typeKey), "POST", { data: data });
+      return this.ajax(url, "POST", { data: data });
     },
 
     updateRecord: function(store, type, record) {
@@ -30,7 +31,7 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
             url = this.buildFindManyUrlWithParent(type, parent);
         } else {
             console.log("untested currently")
-            console.log("objects w/ multiple parents will hit this");
+            console.log("will models w/ multiple parents do this?");
             url = this.buildURL(type.typeKey);
         }
 
@@ -51,6 +52,46 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
             url += '/';
         }
 
+        return url;
+    },
+
+    getBelongsTo: function(record) {
+        var totalParents = [];
+        record.eachRelationship(function(name, relationship) {
+            if (relationship.kind == 'belongsTo') {
+                totalParents.push(name);
+            }
+        }, this);
+        return totalParents;
+    },
+
+    getNonEmptyRelationships: function(record, totalParents) {
+        var totalHydrated = [];
+        totalParents.forEach(function(item) {
+            if (record.get(item) !== null) {
+                totalHydrated.push(item);
+            }
+        }, this);
+        return totalHydrated;
+    },
+
+    getCorrectPostUrl: function(record, url) {
+        var totalParents = this.getBelongsTo(record);
+        var totalHydrated = this.getNonEmptyRelationships(record, totalParents);
+        if (totalParents.length > 1 && totalHydrated.length <= 1) {
+            return this.buildUrlWithParentWhenAvailable(record, url, totalHydrated);
+        }
+        return url;
+    },
+
+    buildUrlWithParentWhenAvailable: function(record, url, totalHydrated) {
+        if (record && url && totalHydrated) {
+            var parent_type = totalHydrated[0];
+            var parent_pk = record.get(parent_type).get('id');
+            var parent_plural = Ember.String.pluralize(parent_type);
+            var endpoint = url.split('/').reverse()[1];
+            url = url.replace(endpoint, parent_plural + "/" + parent_pk + "/" + endpoint);
+        }
         return url;
     },
 

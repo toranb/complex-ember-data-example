@@ -100,12 +100,16 @@ CodeCamp.SpeakerController = Ember.ObjectController.extend({
 CodeCamp.SessionController = Ember.ObjectController.extend({
   actions: {
       addSpeaker: function(session) {
-          //var user = CodeCamp.User.find(1);
-          //var association = CodeCamp.Association.find(1);
+          var self = this;
           var name = this.get('speaker');
           var location = this.get('location');
-          var speaker = {name: name, location: location, session: session};
-          this.store.createRecord('speaker', speaker).save();
+          this.store.find('user', 1).then(function(user) {
+            //to simulate a record create with multiple parents
+            var hash = {zidentity: user, name: name, location: location, session: session};
+            //to create with a single parent use the below hash instead
+            //var hash = {name: name, location: location, session: session};
+            self.store.createRecord('speaker', hash).save();
+          });
       },
       addRating: function(event) {
         var score = this.get('score');
