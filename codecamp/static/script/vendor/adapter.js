@@ -24,8 +24,7 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
     },
 
     findMany: function(store, type, ids, parent) {
-        var adapter, root, url;
-        adapter = this;
+        var url;
 
         if (parent) {
             url = this.buildFindManyUrlWithParent(type, parent);
