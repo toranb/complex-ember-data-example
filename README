@@ -7,6 +7,11 @@ To run this django application
 3. npm install django-ember-precompile
 4. http://localhost:8000
 
+To run the javascript integration tests
+
+1. npm install
+2. karma start
+
 **Files of interest for anyone looking at the ember side of this project
 
 https://github.com/toranb/complex-ember-data-example/blob/master/codecamp/static/script/app/codecamp.js

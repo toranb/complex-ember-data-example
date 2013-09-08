@@ -1,8 +1,8 @@
 {
-  "name": "unit_testing_javascript",
-  "description": "npm files needed to unit test javascript in isolation",
-  "version": "0.0.1",
   "dependencies": {
-    "django-ember-precompile": "1.0.8"
+    "django-ember-precompile": "1.0.8",
+    "karma-ember-preprocessor": "*",
+    "karma-qunit": "*",
+    "karma": "0.10.2"
   }
 }

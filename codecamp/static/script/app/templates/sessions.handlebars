@@ -1,14 +1,18 @@
+<table>
 {{#each session in controller}}
-  {{session.name}}<br />
-  {{session.room}}<br />
+<tr>
+  <td>{{session.name}}</td>
+  <td>{{session.room}}</td>
   {{#each speaker in session.speakers}}
-    {{speaker.name}}<br />
+  <td>{{speaker.name}}</td>
   {{/each}}
   {{#each tag in session.tags}}
-    {{tag.description}}<br />
+  <td>{{tag.description}}</td>
   {{/each}}
-  {{#linkTo 'session' session}}View Session Details{{/linkTo}}<br /><br />
+  <td>{{#linkTo 'session' session}}View Session Details{{/linkTo}}</td>
+</tr>
 {{/each}}
+</table>
 
 {{#linkTo 'associations'}}View All Associations{{/linkTo}}<br />
 
