@@ -1,3 +1,47 @@
+// Version: 0.13.1-13-gd5fad5d
+// Last commit: d5fad5d (2013-09-15 20:29:23 -0500)
+
+
+(function() {
+var define, requireModule;
+
+(function() {
+  var registry = {}, seen = {};
+
+  define = function(name, deps, callback) {
+    registry[name] = { deps: deps, callback: callback };
+  };
+
+  requireModule = function(name) {
+    if (seen[name]) { return seen[name]; }
+    seen[name] = {};
+
+    var mod, deps, callback, reified , exports;
+
+    mod = registry[name];
+
+    if (!mod) {
+      throw new Error("Module '" + name + "' not found.");
+    }
+
+    deps = mod.deps;
+    callback = mod.callback;
+    reified = [];
+    exports;
+
+    for (var i=0, l=deps.length; i<l; i++) {
+      if (deps[i] === 'exports') {
+        reified.push(exports = {});
+      } else {
+        reified.push(requireModule(deps[i]));
+      }
+    }
+
+    var value = callback.apply(this, reified);
+    return seen[name] = exports || value;
+  };
+})();
+(function() {
 var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
 
 DS.DjangoRESTSerializer = DS.JSONSerializer.extend({
@@ -7,10 +51,11 @@ DS.DjangoRESTSerializer = DS.JSONSerializer.extend({
     },
 
     extractDjangoPayload: function(store, type, payload) {
-        for (item in payload) {
+        for (var item in payload) {
             if (typeof(payload[item][0]) !== 'number') {
                 if (payload[item].constructor.name === 'Array') {
                     var singular_type = Ember.String.singularize(item);
+                    /*jshint loopfunc:true*/
                     var ids = payload[item].map(function(related) {
                         store.push(singular_type, related);
                         return related.id; //todo find pk (not always id)
@@ -35,6 +80,13 @@ DS.DjangoRESTSerializer = DS.JSONSerializer.extend({
     }
 
 });
+
+})();
+
+
+
+(function() {
+var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
 
 DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
     defaultSerializer: "DS/djangoREST",
@@ -84,7 +136,7 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
     getBelongsTo: function(record) {
         var totalParents = [];
         record.eachRelationship(function(name, relationship) {
-            if (relationship.kind == 'belongsTo') {
+            if (relationship.kind === 'belongsTo') {
                 totalParents.push(name);
             }
         }, this);
@@ -141,3 +193,14 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
     }
 
 });
+
+})();
+
+
+
+(function() {
+
+})();
+
+
+})();
