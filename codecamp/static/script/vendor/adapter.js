@@ -6,39 +6,31 @@ DS.DjangoRESTSerializer = DS.JSONSerializer.extend({
         this._super.apply(this, arguments);
     },
 
-    extractSingle: function(store, type, payload) {
+    extractDjangoPayload: function(store, type, payload) {
         for (item in payload) {
-            if (payload[item].constructor.name === 'Array') {
-                var singular_type = Ember.String.singularize(item);
-                var ids = payload[item].map(function(related) {
-                    store.push(singular_type, related);
-                    return related.id; //todo find pk (not always id)
-                });
-                if (ids.length > 0 && typeof(payload[item][0]) !== 'number') {
+            if (typeof(payload[item][0]) !== 'number') {
+                if (payload[item].constructor.name === 'Array') {
+                    var singular_type = Ember.String.singularize(item);
+                    var ids = payload[item].map(function(related) {
+                        store.push(singular_type, related);
+                        return related.id; //todo find pk (not always id)
+                    });
                     payload[item] = ids;
                 }
             }
         }
+    },
 
+    extractSingle: function(store, type, payload) {
+        this.extractDjangoPayload(store, type, payload);
         return payload;
     },
 
-    extractArray: function(store, primaryType, payload) {
+    extractArray: function(store, type, payload) {
+        var self = this;
         for (var j = 0; j < payload.length; j++) {
-            for (item in payload[j]) {
-                if (payload[j][item].constructor.name === 'Array') {
-                    var singular_type = Ember.String.singularize(item);
-                    var ids = payload[j][item].map(function(related) {
-                        store.push(singular_type, related);
-                        return related.id; //todo find pk (not always id)
-                    });
-                    if (ids.length > 0 && typeof(payload[j][item][0]) !== 'number') {
-                        payload[j][item] = ids;
-                    }
-                }
-            }
+            self.extractDjangoPayload(store, type, payload[j]);
         }
-
         return payload;
     }
 
@@ -116,10 +108,14 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
             return this.buildUrlWithParentWhenAvailable(record, url, totalHydrated);
         }
 
-        var parent_value = record.get(totalParents[0]).get('id'); //todo find pk (not always id)
-        var parent_plural = Ember.String.pluralize(totalParents[0]);
-        var endpoint = url.split('/').reverse()[1];
-        return url.replace(endpoint, parent_plural + "/" + parent_value + "/" + endpoint);
+        if (totalParents.length === 1 && totalHydrated.length === 1) {
+            var parent_value = record.get(totalParents[0]).get('id'); //todo find pk (not always id)
+            var parent_plural = Ember.String.pluralize(totalParents[0]);
+            var endpoint = url.split('/').reverse()[1];
+            return url.replace(endpoint, parent_plural + "/" + parent_value + "/" + endpoint);
+        }
+
+        return url;
     },
 
     buildUrlWithParentWhenAvailable: function(record, url, totalHydrated) {
