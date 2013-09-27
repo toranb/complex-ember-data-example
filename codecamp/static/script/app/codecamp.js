@@ -69,6 +69,7 @@ CodeCamp.Router.map(function() {
   this.route("speakers", { path : "/speakers" });
   this.route("session", { path : "/session/:session_id" });
   this.route("speaker", { path : "/speaker/:speaker_id" });
+  this.route("user", { path : "/user/:user_id" });
 });
 
 CodeCamp.SessionsRoute = Ember.Route.extend({
