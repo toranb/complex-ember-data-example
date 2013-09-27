@@ -1,50 +1,6 @@
-// Version: 0.13.1-13-gd5fad5d
-// Last commit: d5fad5d (2013-09-15 20:29:23 -0500)
-
-
 (function() {
-var define, requireModule;
 
-(function() {
-  var registry = {}, seen = {};
-
-  define = function(name, deps, callback) {
-    registry[name] = { deps: deps, callback: callback };
-  };
-
-  requireModule = function(name) {
-    if (seen[name]) { return seen[name]; }
-    seen[name] = {};
-
-    var mod, deps, callback, reified , exports;
-
-    mod = registry[name];
-
-    if (!mod) {
-      throw new Error("Module '" + name + "' not found.");
-    }
-
-    deps = mod.deps;
-    callback = mod.callback;
-    reified = [];
-    exports;
-
-    for (var i=0, l=deps.length; i<l; i++) {
-      if (deps[i] === 'exports') {
-        reified.push(exports = {});
-      } else {
-        reified.push(requireModule(deps[i]));
-      }
-    }
-
-    var value = callback.apply(this, reified);
-    return seen[name] = exports || value;
-  };
-})();
-(function() {
-var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
-
-DS.DjangoRESTSerializer = DS.JSONSerializer.extend({
+DS.DjangoRESTSerializer = DS.RESTSerializer.extend({
 
     init: function() {
         this._super.apply(this, arguments);
@@ -52,7 +8,7 @@ DS.DjangoRESTSerializer = DS.JSONSerializer.extend({
 
     extractDjangoPayload: function(store, type, payload) {
         for (var item in payload) {
-            if (typeof(payload[item][0]) !== 'number') {
+            if (!Ember.isNone(payload[item]) && typeof(payload[item][0]) !== 'number') {
                 if (payload[item].constructor.name === 'Array') {
                     var singular_type = Ember.String.singularize(item);
                     /*jshint loopfunc:true*/
@@ -67,6 +23,10 @@ DS.DjangoRESTSerializer = DS.JSONSerializer.extend({
     },
 
     extractSingle: function(store, type, payload) {
+        // using normalize from RESTSerializer applies transforms and allows
+        // us to define keyForAttribute and keyForRelationship to handle
+        // camelization correctly. 
+        this.normalize(type, payload);
         this.extractDjangoPayload(store, type, payload);
         return payload;
     },
@@ -74,22 +34,107 @@ DS.DjangoRESTSerializer = DS.JSONSerializer.extend({
     extractArray: function(store, type, payload) {
         var self = this;
         for (var j = 0; j < payload.length; j++) {
+            // using normalize from RESTSerializer applies transforms and allows
+            // us to define keyForAttribute and keyForRelationship to handle
+            // camelization correctly.
+            this.normalize(type, payload[j]);
             self.extractDjangoPayload(store, type, payload[j]);
         }
         return payload;
+    },
+
+    /**
+      This method allows you to push a single object payload.
+
+      It will first normalize the payload, so you can use this to push
+      in data streaming in from your server structured the same way
+      that fetches and saves are structured.
+
+      @param {DS.Store} store
+      @param {String} type
+      @param {Object} payload
+    */
+    pushSinglePayload: function(store, type, payload) {
+        type = store.modelFor(type);
+        payload = this.extract(store, type, payload, null, "find");
+        store.push(type, payload);
+    },
+
+    /**
+      This method allows you to push an array of object payloads.
+
+      It will first normalize the payload, so you can use this to push
+      in data streaming in from your server structured the same way
+      that fetches and saves are structured.
+
+      @param {DS.Store} store
+      @param {String} type
+      @param {Object} payload
+    */
+    pushArrayPayload: function(store, type, payload) {
+        type = store.modelFor(type);
+        payload = this.extract(store, type, payload, null, "findAll");
+        store.pushMany(type, payload);
+    },
+
+    /**
+      Converts camelcased attributes to underscored when serializing.
+
+      Stolen from DS.ActiveModelSerializer.
+
+      @method keyForAttribute
+      @param {String} attribute
+      @returns String
+    */
+    keyForAttribute: function(attr) {
+        return Ember.String.decamelize(attr);
+    },
+
+    /**
+      Underscores relationship names when serializing relationship keys.
+  
+      Stolen from DS.ActiveModelSerializer.
+      
+      @method keyForRelationship
+      @param {String} key
+      @param {String} kind
+      @returns String
+    */
+    keyForRelationship: function(key, kind) {
+        return Ember.String.decamelize(key);
     }
 
 });
 
+
 })();
 
-
-
 (function() {
-var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
+
+var get = Ember.get;
 
 DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
     defaultSerializer: "DS/djangoREST",
+
+    /**
+      Overrides the `pathForType` method to build underscored URLs.
+
+      Stolen from ActiveModelAdapter
+
+      ```js
+        this.pathForType("famousPerson");
+        //=> "famous_people"
+      ```
+
+      @method pathForType
+      @param {String} type
+      @returns String
+    */
+    pathForType: function(type) {
+        var decamelized = Ember.String.decamelize(type);
+        return Ember.String.pluralize(decamelized);
+    },
+
 
     createRecord: function(store, type, record) {
         var url = this.getCorrectPostUrl(record, this.buildURL(type.typeKey));
@@ -104,11 +149,13 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
     },
 
     findMany: function(store, type, ids, parent) {
-        var adapter, root, url;
+        var adapter, root, url, endpoint, attribute;
         adapter = this;
 
         if (parent) {
-            url = this.buildFindManyUrlWithParent(type, parent);
+            attribute = this.getHasManyAttributeName(type, parent, ids);
+            endpoint = store.serializerFor(type.typeKey).keyForAttribute(attribute);
+            url = this.buildFindManyUrlWithParent(type, parent, endpoint);
         } else {
             Ember.assert("You need to add belongsTo for type (" + type.typeKey + "). No Parent for this record was found");
         }
@@ -181,26 +228,69 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
         return url;
     },
 
-    buildFindManyUrlWithParent: function(type, parent) {
-        var root, url, endpoint, parentValue;
+    buildFindManyUrlWithParent: function(type, parent, endpoint) {
+        var root, url, parentValue;
 
-        endpoint = Ember.String.pluralize(type.typeKey);
         parentValue = parent.get('id'); //todo find pk (not always id)
         root = parent.constructor.typeKey;
         url = this.buildURL(root, parentValue);
 
         return url + endpoint + '/';
+    },
+
+    /**
+      Extract the attribute name given the parent record, the ids of the referenced model, and the type of
+      the referenced model.
+
+      Given the model definition
+
+      ````
+      App.User = DS.Model.extend({
+          username: DS.attr('string'),
+          aliases: DS.hasMany('speaker', { async: true})
+          favorites: DS.hasMany('speaker', { async: true})
+      });
+      ````
+
+      with a model object
+
+      ````
+      user1 = {
+          id: 1,
+          name: 'name',
+          aliases: [2,3],
+          favorites: [4,5]
+      }
+      
+      type = App.Speaker;
+      parent = user1;
+      ids = [4,5]
+      name = getHasManyAttributeName(type, parent, ids) // name === "favorites"
+      ````
+
+      @method getHasManyAttributeName
+      @param {subclass of DS.Model} type
+      @param {DS.Model} parent
+      @param {Array} ids
+      @returns String
+    */
+    getHasManyAttributeName: function(type, parent, ids) {
+      var attributeName;
+
+      parent.eachRelationship(function(name, relationship){
+        var relationshipIds;
+        if (relationship.kind === "hasMany" && relationship.type.typeKey === type.typeKey) {
+          relationshipIds = parent._data[name].mapBy('id');
+          if (Ember.compare(ids, relationshipIds) === 0) {
+            attributeName = name;
+          }
+        }
+      });
+
+      return attributeName;
     }
 
 });
-
-})();
-
-
-
-(function() {
-
-})();
 
 
 })();
