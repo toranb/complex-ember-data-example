@@ -16,13 +16,14 @@ CodeCamp.Speaker = DS.Model.extend({
     association: DS.belongsTo('association'),
     personas: DS.hasMany('persona', { async: true }),
     session: DS.belongsTo('session'),
-    zidentity: DS.belongsTo('user')
+    zidentity: DS.belongsTo('user'),
+    errors: ''
 });
 
 CodeCamp.Speaker.reopen({
     becameError: function(errors) {
         var model = this.constructor.typeKey;
-        alert("operation failed for model: " + model);
+        this.set('errors', "operation failed for model: " + model);
     }
 });
 
