@@ -1,3 +1,14 @@
+// ==========================================================================
+// Project:   Ember Data Django Rest Adapter
+// Copyright: (c) 2013 Toran Billups http://toranbillups.com
+// License:   MIT
+// ==========================================================================
+
+
+// 0.13.1-55-gbd5ee3e
+// bd5ee3e (2013-11-04 21:31:02 -0600)
+
+
 (function() {
 
 DS.DjangoRESTSerializer = DS.RESTSerializer.extend({
@@ -9,12 +20,17 @@ DS.DjangoRESTSerializer = DS.RESTSerializer.extend({
     extractDjangoPayload: function(store, type, payload) {
         type.eachRelationship(function(key, relationship){
             // TODO should we check if relationship is marked as embedded?
-            if (!Ember.isNone(payload[key]) && typeof(payload[key][0]) !== 'number') {
+            if (!Ember.isNone(payload[key]) && typeof(payload[key][0]) !== 'number' && relationship.kind ==='hasMany') {
                 if (payload[key].constructor.name === 'Array' && payload[key].length > 0) {
                     var ids = payload[key].mapBy('id'); //todo find pk (not always id)
                     this.pushArrayPayload(store, relationship.type, payload[key]);
                     payload[key] = ids;
                 }
+            }
+            else if (!Ember.isNone(payload[key]) && typeof(payload[key]) === 'object' && relationship.kind ==='belongsTo') {
+                var id=payload[key].id;
+                this.pushSinglePayload(store,relationship.type,payload[key]);
+                payload[key]=id;
             }
         }, this);
     },
@@ -215,7 +231,7 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
     },
 
     buildUrlWithParentWhenAvailable: function(record, url, totalHydrated) {
-        if (record && url && totalHydrated) {
+        if (record && url && totalHydrated && totalHydrated.length > 0) {
             var parent_type = totalHydrated[0];
             var parent_pk = record.get(parent_type).get('id'); //todo find pk (not always id)
             var parent_plural = Ember.String.pluralize(parent_type);
@@ -273,12 +289,12 @@ DS.DjangoRESTAdapter = DS.RESTAdapter.extend({
     */
     getHasManyAttributeName: function(type, parent, ids) {
       var attributeName;
-
       parent.eachRelationship(function(name, relationship){
         var relationshipIds;
         if (relationship.kind === "hasMany" && relationship.type.typeKey === type.typeKey) {
           relationshipIds = parent._data[name].mapBy('id');
-          if (Ember.compare(ids, relationshipIds) === 0) {
+          // check if all of the requested ids are covered by this attribute
+          if (Ember.EnumerableUtils.intersection(ids, relationshipIds).length === ids.length) {
             attributeName = name;
           }
         }

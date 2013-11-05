@@ -5,7 +5,7 @@ module.exports = function(karma) {
         files: [
           "vendor/jquery-1.9.1.js",
           "vendor/handlebars-1.0.0.js",
-          "vendor/ember-1.0.0.js",
+          "vendor/ember.js",
           "vendor/ember-data.js",
           "vendor/adapter.js",
           "vendor/jquery.mockjax.js",
