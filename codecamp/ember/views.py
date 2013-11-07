@@ -22,7 +22,7 @@ class SessionDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Session
     serializer_class = serializers.SessionSerializer
 
-class TagBySessionList(generics.ListCreateAPIView):
+class TagBySessionList(generics.ListAPIView):
     model = Tag
     serializer_class = serializers.TagSerializer
 
@@ -40,7 +40,7 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     model = User
     serializer_class = serializers.UserSerializer
 
-class SpeakerBySessionList(generics.ListCreateAPIView):
+class SpeakerBySessionList(generics.ListAPIView):
     model = Speaker
     serializer_class = serializers.SpeakerSerializer
 
@@ -50,7 +50,7 @@ class SpeakerBySessionList(generics.ListCreateAPIView):
             return Speaker.objects.filter(session__pk=session_pk)
         return []
 
-class SpeakerByAssociationList(generics.ListCreateAPIView):
+class SpeakerByAssociationList(generics.ListAPIView):
     model = Speaker
     serializer_class = serializers.SpeakerSerializer
 
@@ -64,7 +64,7 @@ class SpeakerDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Speaker
     serializer_class = serializers.SpeakerSerializer
 
-class RatingBySessionList(generics.ListCreateAPIView):
+class RatingBySessionList(generics.ListAPIView):
     model = Rating
     serializer_class = serializers.RatingSerializer
 
@@ -78,7 +78,7 @@ class RatingDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Rating
     serializer_class = serializers.RatingSerializer
 
-class SponsorByCompanyList(generics.ListCreateAPIView):
+class SponsorByCompanyList(generics.ListAPIView):
     model = Sponsor
     serializer_class = serializers.SponsorSerializer
 
@@ -88,7 +88,7 @@ class SponsorByCompanyList(generics.ListCreateAPIView):
             return Sponsor.objects.filter(company__pk=company_pk)
         return []
 
-class PersonaBySpeakerList(generics.ListCreateAPIView):
+class PersonaBySpeakerList(generics.ListAPIView):
     model = Persona
     serializer_class = serializers.PersonaSerializer
 
