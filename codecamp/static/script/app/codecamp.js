@@ -110,7 +110,10 @@ CodeCamp.SessionController = Ember.ObjectController.extend({
             var hash = {zidentity: user, name: name, location: location, session: session};
             //to create with a single parent use the below hash instead
             //var hash = {name: name, location: location, session: session};
-            self.store.createRecord('speaker', hash).save();
+            var speaker = self.store.createRecord('speaker', hash)
+            speaker.save();
+            //current ember-data 1.0 requires you wire up the parent like so
+            session.get('speakers').pushObject(speaker);
           });
       },
       addRating: function(parent) {
