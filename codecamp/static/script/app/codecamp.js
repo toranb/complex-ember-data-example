@@ -113,18 +113,21 @@ CodeCamp.SessionController = Ember.ObjectController.extend({
             self.store.createRecord('speaker', hash).save();
           });
       },
-      addRating: function(event) {
+      addRating: function(parent) {
         var score = this.get('score');
         var feedback = this.get('feedback');
         if (score === undefined || feedback === undefined || score.trim() === "" || feedback.trim() === "") {
           return;
         }
-        var rating = { score: score, feedback: feedback, session: event};
-        this.store.createRecord('rating', rating).save();
-        //event.get('ratings').createRecord('rating', rating).save();
+        var hash = { score: score, feedback: feedback, session: parent};
+        var rating = this.store.createRecord('rating', hash);
+        rating.save();
+        //parent.get('ratings').createRecord('rating', rating).save();
         //won't update the template currently :(
         this.set('score', '');
         this.set('feedback', '');
+        //current ember-data 1.0 requires you wire up the parent like so
+        parent.get('ratings').pushObject(rating);
       },
       deleteRating: function(rating) {
           rating.deleteRecord();
