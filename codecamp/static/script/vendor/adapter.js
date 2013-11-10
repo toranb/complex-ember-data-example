@@ -5,8 +5,8 @@
 // ==========================================================================
 
 
-// 0.13.1-56-g8d8c6a8
-// 8d8c6a8 (2013-11-06 20:23:25 -0600)
+// 0.13.1-63-gff125f1
+// ff125f1 (2013-11-10 08:39:27 -0600)
 
 
 (function() {
@@ -105,9 +105,9 @@ DS.DjangoRESTSerializer = DS.RESTSerializer.extend({
 
     /**
       Underscores relationship names when serializing relationship keys.
-  
+
       Stolen from DS.ActiveModelSerializer.
-      
+
       @method keyForRelationship
       @param {String} key
       @param {String} kind
@@ -115,6 +115,47 @@ DS.DjangoRESTSerializer = DS.RESTSerializer.extend({
     */
     keyForRelationship: function(key, kind) {
         return Ember.String.decamelize(key);
+    },
+
+    /**
+      Underscore relationship names when serializing belongsToRelationships
+
+      @method serializeBelongsTo
+    */
+    serializeBelongsTo: function(record, json, relationship) {
+        var key = relationship.key;
+        var belongsTo = record.get(key);
+        var json_key = this.keyForRelationship ? this.keyForRelationship(key, "belongsTo") : key;
+
+        if (Ember.isNone(belongsTo)) {
+          json[json_key] = belongsTo;
+        } else {
+          if (record.get(key) instanceof String) {
+            json[json_key] = record.get(key);
+          }else{
+            json[json_key] = record.get(key).get('id');
+          }
+        }
+
+        if (relationship.options.polymorphic) {
+          this.serializePolymorphicType(record, json, relationship);
+        }
+    },
+
+    /**
+      Underscore relationship names when serializing hasManyRelationships
+
+      @method serializeHasMany
+    */
+    serializeHasMany: function(record, json, relationship) {
+        var key = relationship.key,
+            json_key = this.keyForRelationship(key, "hasMany"),
+            relationshipType = DS.RelationshipChange.determineRelationshipType(
+                record.constructor, relationship);
+
+        if (relationshipType === 'manyToNone' ||
+            relationshipType === 'manyToMany')
+            json[json_key] = record.get(key).mapBy('id');
     }
 
 });
