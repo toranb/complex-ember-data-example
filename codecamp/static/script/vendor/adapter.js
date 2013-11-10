@@ -5,8 +5,8 @@
 // ==========================================================================
 
 
-// 0.13.1-63-gff125f1
-// ff125f1 (2013-11-10 08:39:27 -0600)
+// 0.13.1-63-g8b5e214
+// 8b5e214 (2013-11-10 11:48:40 -0600)
 
 
 (function() {
@@ -130,7 +130,7 @@ DS.DjangoRESTSerializer = DS.RESTSerializer.extend({
         if (Ember.isNone(belongsTo)) {
           json[json_key] = belongsTo;
         } else {
-          if (record.get(key) instanceof String) {
+          if (typeof(record.get(key)) === 'string') {
             json[json_key] = record.get(key);
           }else{
             json[json_key] = record.get(key).get('id');
