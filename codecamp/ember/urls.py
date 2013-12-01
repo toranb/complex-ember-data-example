@@ -1,5 +1,5 @@
 from codecamp.ember import views
-from django.conf.urls.defaults import patterns, url, include
+from django.conf.urls import patterns, url, include
 
 urlpatterns = patterns('',
     url(r'^/tags/$', views.TagList.as_view()),
