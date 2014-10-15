@@ -1,5 +1,10 @@
 from os.path import dirname, join, abspath
 
+try:                                                                                                                                                                                   
+    from shlex import quote as shell_quote  # Python 3                                                                                                                                 
+except ImportError:                                                                                                                                                                    
+    from pipes import quote as shell_quote  # Python 2   
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 COMPRESS_ENABLED = False
@@ -109,6 +114,10 @@ LOGGING = {
 
 NODE_ROOT = join(PROJECT_DIR, '..', 'node_modules')
 HANDLEBARS_PATH = join(NODE_ROOT, 'django-ember-precompile', 'bin', 'django-ember-precompile')
+
+# Escape characters in the file path (like spaces)
+# Prevents django-compress manipulation errors 
+HANDLEBARS_PATH = shell_quote(HANDLEBARS_PATH)
 
 COMPRESS_PRECOMPILERS = (
     ('text/x-handlebars', '{} {{infile}}'.format(HANDLEBARS_PATH)),
